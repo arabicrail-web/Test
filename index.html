@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Aula 1</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Lora:ital,wght@0,400;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0a06;
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --cream: #f0e6d0;
+      --dim: #7a6a52;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--cream);
+      font-family: 'Lora', Georgia, serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      background-image:
+        radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, rgba(201,168,76,0.04) 0%, transparent 60%);
+    }
+
+    /* Ornament line */
+    .ornament {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.2rem;
+      width: 100%;
+      max-width: 720px;
+    }
+    .ornament::before, .ornament::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold), transparent);
+    }
+    .ornament span {
+      color: var(--gold);
+      font-size: 1.1rem;
+      letter-spacing: 0.15em;
+    }
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      letter-spacing: 0.12em;
+      color: var(--gold-light);
+      text-align: center;
+      margin-bottom: 0.4rem;
+      text-shadow: 0 0 30px rgba(201,168,76,0.3);
+    }
+
+    .subtitle {
+      font-style: italic;
+      color: var(--dim);
+      font-size: 0.9rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* Player wrapper */
+    .player-shell {
+      width: 100%;
+      max-width: 720px;
+      border: 1px solid rgba(201,168,76,0.25);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+      background: #000;
+      box-shadow:
+        0 0 0 1px rgba(201,168,76,0.08),
+        0 8px 40px rgba(0,0,0,0.7),
+        0 0 60px rgba(201,168,76,0.05);
+    }
+
+    /* 16:9 ratio container */
+    .ratio-box {
+      position: relative;
+      width: 100%;
+      padding-bottom: 56.25%;
+    }
+
+    /* YouTube iframe */
+    #yt-iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* Invisible overlay that blocks YouTube UI clicks */
+    #overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      cursor: pointer;
+      /* Blocks all clicks reaching the iframe */
+    }
+
+    /* Custom controls bar */
+    .controls {
+      background: linear-gradient(to right, #110d07, #1a1309);
+      border-top: 1px solid rgba(201,168,76,0.15);
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      background: none;
+      border: 1px solid rgba(201,168,76,0.3);
+      color: var(--gold);
+      font-family: 'Lora', serif;
+      font-size: 0.8rem;
+      padding: 0.3rem 0.8rem;
+      border-radius: 2px;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn:hover { background: rgba(201,168,76,0.1); border-color: var(--gold); }
+
+    /* Seek bar */
+    .seek-wrap {
+      flex: 1;
+      min-width: 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .seek-track {
+      width: 100%;
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      position: relative;
+      cursor: pointer;
+    }
+    #progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(to right, var(--gold), var(--gold-light));
+      border-radius: 2px;
+      transition: width 0.5s linear;
+      pointer-events: none;
+    }
+    .time-label {
+      color: var(--dim);
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+    }
+
+    /* Volume */
+    .vol-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .vol-wrap span { color: var(--gold); font-size: 0.85rem; }
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 70px;
+      height: 3px;
+      background: rgba(201,168,76,0.3);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--gold);
+    }
+
+    /* Bottom ornament */
+    .footer-orn {
+      margin-top: 1.8rem;
+      color: var(--dim);
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.5;
+    }
+
+    @media (max-width: 480px) {
+      .controls { gap: 0.5rem; padding: 0.6rem 0.75rem; }
+      .btn { font-size: 0.72rem; padding: 0.25rem 0.6rem; }
+      input[type=range] { width: 55px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ornament"><span>✦</span></div>
+
+  <h1>Aula 1</h1>
+  <p class="subtitle">Utilize os controles abaixo para navegar</p>
+
+  <div class="player-shell">
+    <div class="ratio-box">
+      <iframe
+        id="yt-iframe"
+        src="https://www.youtube.com/embed/FyA05-W7d0Q?enablejsapi=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&fs=0&disablekb=1"
+        allow="autoplay; encrypted-media"
+        allowfullscreen>
+      </iframe>
+      <!-- Overlay blocks clicks reaching YouTube UI -->
+      <div id="overlay"></div>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="btn-play">▶ Play</button>
+
+      <div class="seek-wrap">
+        <div class="seek-track" id="seek-track">
+          <div id="progress-bar"></div>
+        </div>
+        <span class="time-label" id="time-label">0:00 / 0:00</span>
+      </div>
+
+      <div class="vol-wrap">
+        <span>🔊</span>
+        <input type="range" id="vol-slider" min="0" max="100" value="80"/>
+      </div>
+    </div>
+  </div>
+
+  <p class="footer-orn">⬡ conteúdo exclusivo ⬡</p>
+
+  <!-- YouTube IFrame API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script>
+    let player, duration = 0, ticker;
+
+    // Called automatically by the API when ready
+    window.onYouTubeIframeAPIReady = function () {
+      player = new YT.Player('yt-iframe', {
+        events: {
+          onReady: onReady,
+          onStateChange: onStateChange
+        }
+      });
+    };
+
+    function onReady(e) {
+      duration = player.getDuration();
+      player.setVolume(80);
+    }
+
+    function onStateChange(e) {
+      const btnPlay = document.getElementById('btn-play');
+      if (e.data === YT.PlayerState.PLAYING) {
+        btnPlay.textContent = '⏸ Pausar';
+        ticker = setInterval(updateProgress, 500);
+      } else {
+        btnPlay.textContent = '▶ Play';
+        clearInterval(ticker);
+      }
+      if (e.data === YT.PlayerState.ENDED) {
+        btnPlay.textContent = '↺ Rever';
+        document.getElementById('progress-bar').style.width = '100%';
+      }
+    }
+
+    // Play/pause toggle
+    document.getElementById('btn-play').addEventListener('click', () => {
+      if (!player) return;
+      const state = player.getPlayerState();
+      if (state === YT.PlayerState.PLAYING) {
+        player.pauseVideo();
+      } else {
+        player.playVideo();
+      }
+    });
+
+    // Overlay click = play/pause
+    document.getElementById('overlay').addEventListener('click', () => {
+      document.getElementById('btn-play').click();
+    });
+
+    // Seek bar click
+    document.getElementById('seek-track').addEventListener('click', function(e) {
+      if (!player || !duration) return;
+      const rect = this.getBoundingClientRect();
+      const pct = (e.clientX - rect.left) / rect.width;
+      player.seekTo(pct * duration, true);
+    });
+
+    // Volume slider
+    document.getElementById('vol-slider').addEventListener('input', function() {
+      if (player) player.setVolume(parseInt(this.value));
+    });
+
+    function updateProgress() {
+      if (!player || !duration) {
+        duration = player.getDuration();
+        return;
+      }
+      const cur = player.getCurrentTime();
+      const pct = (cur / duration) * 100;
+      document.getElementById('progress-bar').style.width = pct + '%';
+      document.getElementById('time-label').textContent = fmt(cur) + ' / ' + fmt(duration);
+    }
+
+    function fmt(s) {
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60);
+      return m + ':' + String(sec).padStart(2, '0');
+    }
+  </script>
+</body>
+</html>
